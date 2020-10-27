@@ -47,3 +47,5 @@ Store information (scores, users, etc), display score in real-time, load json fr
 5. could not get the text to vertically align no matter the markup/classes used. gave up on it.
 6. shuffling array so that answers weren't always in the same order
 7. picking 10 random questions without duplication
+8. removing events so that users couldn't continue to click the answers affecting internal counters
+9. dynamically adding and removing elements (some exp with adding but been a while)
