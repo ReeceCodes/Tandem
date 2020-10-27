@@ -49,3 +49,4 @@ Store information (scores, users, etc), display score in real-time, load json fr
 7. picking 10 random questions without duplication
 8. removing events so that users couldn't continue to click the answers affecting internal counters
 9. dynamically adding and removing elements (some exp with adding but been a while)
+10. using only Notepad++ and Chrome debugger was "quick and easy" but limiting because I am sure there is a better way especially since I don't know how to do any automated testing
