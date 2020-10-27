@@ -41,7 +41,7 @@ Store information (scores, users, etc), display score in real-time, load json fr
 ## Troublesome tasks or things I learned as I went
 
 1. json file could not be loaded locally (easily) because javascript doesn't have access to local files
-2. json couldn't be loaded easily from external source because of CORS (tried github, maybe if everything was hosted on the same site but I was using by literally opening the html file in a browser, MAY be browser dependent but I user Chrome)
+2. json couldn't be loaded easily from external source because of CORS (tried github, maybe if everything was hosted on the same site but I was using by literally opening the html file in a browser, MAY be browser dependent but I use Chrome)
 3. not all question answer arrays contained the same number of elements despite the instructions saying they would (resulting in out of bounds exceptions, maybe something that automated testing would catch?)
 4. styling the answers to wrap when the text was too long while keeping it as large as possible
 5. could not get the text to vertically align no matter the markup/classes used. gave up on it.
