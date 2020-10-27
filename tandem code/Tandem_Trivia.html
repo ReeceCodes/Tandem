@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html style="min-width:300px;">
+<head>
+<script src="./jquery-3.5.1.min.js"></script>
+<script src="./jsondata.js"></script>
+<!-- include boostrap to get access to some familiar css -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<title>Tandem Trivia</title>
+</head>
+<body>
+
+<script>
+	const totalQ = 10;
+	var correctCount = 0;
+	var progressCount = 0;
+	var chosen = [];
+	var answerOrder = [0,1,2,3]; //shuffle this to get a different order for answers (1-3 are array of incorrect, 4 is correct)
+
+  //pseudo-code
+  //load json
+  //pick 10 randomly
+  //add elements/events
+  //keep track of answers
+  //display score after all done (last question needs to be marked so it knows to go to next step?)
+  
+  //NOT EFFICIENT but functional
+  //randomly fill array fron json entries, not efficient because it still tries to get entries at random when filling. might be a better way that includes removing an entry from json when adding it
+  function GetEntries()
+  {
+	//get ten entries, no duplicates
+	for (let i = 0; i < 10; i++)
+	{
+		//no need to check first entry	
+		if (i == 0)
+		{
+			chosen.push(jsonData[Math.floor(Math.random() * jsonData.length)]);
+		}
+		else
+		{		
+			//get an entry, if it's in the array then don't add it and try again
+			var tempChosen = jsonData[Math.floor(Math.random() * jsonData.length)];
+		
+			//not in array, add it
+			if (chosen.includes(tempChosen) == false)
+			{
+				chosen.push(tempChosen);		
+			}
+			else
+			{
+				//while it's one that was chosen in the array, continue retrying (randomly) and check again
+				while(chosen.includes(tempChosen))
+				{
+					tempChosen = jsonData[Math.floor(Math.random() * jsonData.length)];
+				
+					if (chosen.includes(tempChosen) == false){
+						chosen.push(tempChosen);				
+						break; //exit while since we added one
+					}
+				}
+			}
+		}
+	}
+  }
+  
+  GetEntries();
+  
+  //variables not working...
+  var mainDiv = $('#main');
+  var qDiv = $('#question');
+  var aDiv = $('#answers');
+  var pDiv = $('#progress');
+  
+  function UpdateProgress()
+  {
+	//have to add one to the progress because it starts are 0
+	$('#progress').text((progressCount+1).toString() + " of " + totalQ.toString() );	
+  }
+  
+  //get next question/answer, adds all the elements/events. 
+  function NextQuestion(elementIndex)
+  {
+	$('#answers').empty(); //clear all elements
+	$('#next').text("Next");
+	$('#next').toggle(); //toggle the next button on/off (starts on, here makes off,  answer click makes on again)
+  
+	//if it's the last one then do the end stuff
+	if (elementIndex > 9)
+	{
+		$('#retry').toggle();
+		
+		//cleanup, display final score etc
+		$('#answers').empty(); //clear all elements
+		QuestionText("");
+		
+		$('#progress').text("You got " + correctCount.toString() + " of " + totalQ.toString() + " correct!");	
+
+		return;		
+	}
+    
+	QuestionText(chosen[elementIndex].question); //add question text
+	
+	//get answers, need to make sure to not put them in the same order but also so that each is picked
+	//direct copy of code from SO on shuffling arrays. just need to get a new random order for the answer array
+	function shuffleArray(array) {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+	}
+	
+	shuffleArray(answerOrder);
+	
+	//always 4 answers, go through the newly shuffled array to find which answer to select when ordering
+	for (let ai = 0; ai < 4; ai++)
+	{	
+		//some of the arrays for incorrect don't have 3 answers, check if the option is available before trying to add
+		if (ai <= 2 && chosen[elementIndex].incorrect[ai] === undefined)
+		{			
+			continue;
+		}
+	
+		switch(answerOrder[ai])
+		{		
+			case 0:		
+				AddAnswerElement(chosen[elementIndex].incorrect[0], ai);
+				break;			
+			case 1:
+				AddAnswerElement(chosen[elementIndex].incorrect[1], ai); 
+				break;
+			case 2:			
+				AddAnswerElement(chosen[elementIndex].incorrect[2], ai); //these are all effectively the same, but I couldn't get it to cascade to this statement because this loop is based on the idea of 4 answers and there are only 3 elements here so sometimes it would be undefined
+				break;
+			case 3: //correct answer, different json element			
+				AddAnswerElement(chosen[elementIndex].correct, ai, true);				
+				break;
+		}
+	}
+	
+	UpdateProgress(); //display only
+  }
+  
+  //change question text
+  function QuestionText(text)
+  {
+	$('#question').text(text);
+  }
+  
+  //answer events trigger: correct/incorrect, fade choices, show next button (NextQuestion function)
+  function AddAnswerElement(text, num, correct = false)
+  {
+	//this is only here because I want the class coloring in the same order every time, they are identical otherwise...
+	switch (num)
+	{
+		case 0:
+			$('#answers').append('<div id="answer' + num.toString() + '" style="margin:5px 5px 5px 5px; height:100px;" class="col-5 btn btn-primary" data-correct="' + correct.toString() + '"><p class="h2" style="white-space:normal;">' + text + '</p></div>');
+			break;
+		case 1:
+			$('#answers').append('<div id="answer' + num.toString() + '" style="margin:5px 5px 5px 5px; height:100px;" class="col-5 btn btn-success" data-correct="' + correct.toString() + '"><p class="h2" style="white-space:normal;">' + text + '</p></div>');
+			break;	
+		case 2:
+			$('#answers').append('<div id="answer' + num.toString() + '" style="margin:5px 5px 5px 5px; height:100px;" class="col-5 btn btn-warning" data-correct="' + correct.toString() + '"><p class="h2" style="white-space:normal;">' + text + '</p></div>');
+			break;	
+		case 3:
+			$('#answers').append('<div id="answer' + num.toString() + '" style="margin:5px 5px 5px 5px; height:100px;" class="col-5 btn btn-info" data-correct="' + correct.toString() + '"><p class="h2" style="white-space:normal;">' + text + '</p></div>');
+			break;	
+	}
+	
+	
+	//if it's correct add event for incrementing correct count
+	//else they are the same, show correct answer (remove other event handlers), show next button
+	if (correct)
+	{
+		$('#answer' + num.toString()).click(
+			function () {
+				correctCount++;
+			}
+		);
+	}
+	
+	$('#answer' + num.toString()).click(
+		function () 
+		{
+			FadeAnswers();
+		
+			//show next button, hide incorrect answers (dim them?) (fade elements unless it's the data-correct = true)
+			$('#next').toggle();
+			
+			progressCount++;		
+		}
+	);	
+  }
+  
+  function FadeAnswers()
+  {	
+	//get the elements that have this data attribute and fade them away
+	$('div').find('[data-correct="false"]').animate({opacity: 0.2});
+	$('div').find('[data-correct]').off();
+  }  
+  
+    
+</script>
+
+<br/>
+
+<div id="main" class="container">
+
+<div class="container">
+<h3 id="progress"></h3>
+</div>
+
+<br/>
+
+<div class="container">
+	<p id="question" class="h2">
+
+	</p>
+</div>
+
+<br/>
+
+<div class="container">
+	<div id="answers" class="row text-center">
+
+	</div>
+</div>
+
+<br/>
+
+<div class="container">
+	<div id="next" onclick="NextQuestion(progressCount);" class="btn btn-primary">
+		<span>Begin</span>
+	</div>
+	<div id="retry" onclick="location.reload();" class="btn btn-primary" style="display:none;">
+		<span>Play again</span>
+	</div>
+</div>
+
+<script>
+//start the page with the first question ready to go
+//put at the bottom of the body so that the rest of the scripts/html are loaded first
+  NextQuestion(0);
+</script>
+
+</body>
+</html>
